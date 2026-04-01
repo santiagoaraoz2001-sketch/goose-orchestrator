@@ -1,0 +1,72 @@
+orchestrator:
+  model: "qwen3:14b"
+  provider: "ollama"
+  context_window: 32768
+  endpoint: "http://localhost:11434"
+
+workers:
+  deep_research:
+    model: "qwen3:32b"
+    provider: "ollama"
+    context_window: 32768
+    temperature: 0.4
+    enabled: true
+    description: "Multi-hop web research, paper analysis, citation chains"
+    tools: ["web_search", "url_fetch"]
+  local_rag:
+    model: "qwen3:8b"
+    provider: "ollama"
+    context_window: 16384
+    temperature: 0.2
+    enabled: true
+    description: "Local document retrieval, codebase search, file Q&A"
+    tools: ["file_read", "semantic_search"]
+  code_gen:
+    model: "qwen2.5-coder:32b"
+    provider: "ollama"
+    context_window: 32768
+    temperature: 0.3
+    enabled: true
+    description: "Code generation, refactoring, debugging, test writing"
+    tools: ["file_edit", "shell_exec"]
+  summarizer:
+    model: "qwen3:8b"
+    provider: "ollama"
+    context_window: 8192
+    temperature: 0.5
+    enabled: true
+    description: "Condensing large outputs, report writing, key point extraction"
+    tools: []
+  math_reasoning:
+    model: "qwen3:32b"
+    provider: "ollama"
+    context_window: 32768
+    temperature: 0.1
+    enabled: true
+    description: "Formal proofs, calculations, step-by-step logical reasoning"
+    tools: ["python_repl"]
+  creative:
+    model: "llama3:70b"
+    provider: "ollama"
+    context_window: 16384
+    temperature: 0.9
+    enabled: true
+    description: "Creative writing, brainstorming, ideation, storytelling"
+    tools: []
+
+resources:
+  max_simultaneous_workers: 2
+  vram_budget_gb: 180
+  api_rate_limit_rpm: 60
+  model_load_timeout_s: 120
+  worker_generation_timeout_s: 300
+
+providers:
+  ollama:
+    endpoint: "http://localhost:11434"
+  openai:
+    endpoint: "https://api.openai.com/v1"
+    api_key_env: "OPENAI_API_KEY"
+  anthropic:
+    endpoint: "https://api.anthropic.com"
+    api_key_env: "ANTHROPIC_API_KEY"
