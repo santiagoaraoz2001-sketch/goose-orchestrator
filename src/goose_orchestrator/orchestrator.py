@@ -95,7 +95,7 @@ class Orchestrator:
                 "role": r.role,
                 "model": r.model,
                 "success": r.success,
-                "text": r.text[:5000] if r.success else "",
+                "text": r.text if r.success else "",
                 "error": r.error,
                 "elapsed_s": round(r.elapsed_s, 1),
             }

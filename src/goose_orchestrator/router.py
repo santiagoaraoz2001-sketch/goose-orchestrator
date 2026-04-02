@@ -20,7 +20,7 @@ class TaskStep:
     role: str
     sub_prompt: str
     depends_on: list[int] = field(default_factory=list)
-    context_budget: int = 4096
+    context_budget: int = 8192
     preload_hint: str | None = None  # role to speculatively preload next
 
 
@@ -42,7 +42,9 @@ Rules:
 1. Each step must specify exactly one role from the available roles.
 2. Steps with no dependencies can execute in parallel.
 3. Use "depends_on" to express ordering constraints (list of step IDs).
-4. Set "context_budget" as the max tokens the worker should generate (be economical).
+4. Set "context_budget" to a GENEROUS token limit. Workers should have enough room to \
+   produce thorough, complete responses. Use at least 8192 for research and code tasks, \
+   and at least 4096 for summarization. Never set below 2048.
 5. If you predict which role will be needed AFTER a step, set "preload_hint" to that role name \
    so the system can speculatively pre-load the model.
 6. If the prompt is simple and only needs one role, return a single step.
@@ -57,7 +59,7 @@ Respond with ONLY valid JSON matching this schema:
       "role": "role_name",
       "sub_prompt": "what to tell this worker",
       "depends_on": [],
-      "context_budget": 4096,
+      "context_budget": 8192,
       "preload_hint": "next_role_or_null"
     }}
   ]
@@ -153,8 +155,9 @@ class TaskRouter:
                 continue
 
             worker_cfg = cfg.get_worker(role)
-            max_ctx = worker_cfg.context_window if worker_cfg else 4096
-            budget = min(raw_step.get("context_budget", 4096), max_ctx)
+            max_ctx = worker_cfg.context_window if worker_cfg else 8192
+            raw_budget = raw_step.get("context_budget", 8192)
+            budget = max(2048, min(raw_budget, max_ctx))  # floor at 2048, cap at context_window
 
             hint = raw_step.get("preload_hint")
             if hint and hint not in enabled_roles:
