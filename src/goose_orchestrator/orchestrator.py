@@ -1,4 +1,4 @@
-"""Orchestrator — top-level glue wiring router → pool → CrewAI → result assembly."""
+"""Orchestrator — top-level glue wiring router → pool → worker dispatcher → result assembly."""
 
 from __future__ import annotations
 
@@ -8,13 +8,13 @@ import time
 from goose_orchestrator.config_manager import ConfigManager
 from goose_orchestrator.model_pool import ModelPool
 from goose_orchestrator.router import TaskPlan, TaskRouter
-from goose_orchestrator.crew_manager import CrewManager, StepResult
+from goose_orchestrator.worker import StepResult, WorkerDispatcher
 
 log = logging.getLogger(__name__)
 
 
 class Orchestrator:
-    """Singleton orchestration engine. Owns the model pool and CrewAI dispatcher."""
+    """Singleton orchestration engine. Owns the model pool and dispatcher."""
 
     _instance: Orchestrator | None = None
 
@@ -30,23 +30,23 @@ class Orchestrator:
         self._initialized = True
         self._pool = ModelPool()
         self._router: TaskRouter | None = None
-        self._crew_mgr: CrewManager | None = None
+        self._dispatcher: WorkerDispatcher | None = None
 
     async def _ensure_ready(self) -> None:
-        """Boot: load orchestrator model, create router & crew manager."""
+        """Boot: load orchestrator model, create router & dispatcher."""
         if self._router is not None:
             return
 
         cfg = ConfigManager()
         provider = await self._pool.ensure_orchestrator_loaded()
         self._router = TaskRouter(provider, cfg.cfg.orchestrator.model)
-        self._crew_mgr = CrewManager(self._pool)
-        log.info("Orchestrator ready (model=%s, backend=CrewAI)", cfg.cfg.orchestrator.model)
+        self._dispatcher = WorkerDispatcher(self._pool)
+        log.info("Orchestrator ready (model=%s)", cfg.cfg.orchestrator.model)
 
-    async def run(self, prompt: str, on_step_start=None, on_step_end=None) -> str:
-        """Main entry: route, dispatch via CrewAI, assemble."""
+    async def run(self, prompt: str) -> str:
+        """Main entry: route, dispatch, assemble."""
         await self._ensure_ready()
-        assert self._router is not None and self._crew_mgr is not None
+        assert self._router is not None and self._dispatcher is not None
 
         t0 = time.monotonic()
 
@@ -55,12 +55,8 @@ class Orchestrator:
         plan_time = time.monotonic() - t0
         log.info("Plan created in %.1fs: %d steps — %s", plan_time, len(plan.steps), plan.summary)
 
-        # Phase 2: Execute via CrewAI
-        results: list[StepResult] = await self._crew_mgr.execute_plan(
-            plan.steps,
-            on_step_start=on_step_start,
-            on_step_end=on_step_end,
-        )
+        # Phase 2: Execute
+        results: list[StepResult] = await self._dispatcher.execute_plan(plan.steps)
         total_time = time.monotonic() - t0
 
         # Phase 3: Assemble
@@ -69,7 +65,7 @@ class Orchestrator:
     async def run_with_events(self, prompt: str):
         """Generator-style entry that yields events for WebSocket streaming."""
         await self._ensure_ready()
-        assert self._router is not None and self._crew_mgr is not None
+        assert self._router is not None and self._dispatcher is not None
 
         t0 = time.monotonic()
 
@@ -89,7 +85,7 @@ class Orchestrator:
             "plan_time_s": round(plan_time, 1),
         }
 
-        results: list[StepResult] = await self._crew_mgr.execute_plan(plan.steps)
+        results: list[StepResult] = await self._dispatcher.execute_plan(plan.steps)
         total_time = time.monotonic() - t0
 
         for r in results:

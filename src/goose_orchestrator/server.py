@@ -27,7 +27,7 @@ SYSTEM_INSTRUCTIONS = """\
 # Goose Orchestrator — Multi-Model Agent Extension
 
 You have access to the **goose-orchestrator** extension, which lets you decompose \
-complex tasks into sub-tasks and route each to a specialized worker model via CrewAI. \
+complex tasks into sub-tasks and route each to a specialized worker model. \
 This is useful when a single model isn't optimal for every part of a request — e.g. \
 research requires a different model than code generation or mathematical reasoning.
 

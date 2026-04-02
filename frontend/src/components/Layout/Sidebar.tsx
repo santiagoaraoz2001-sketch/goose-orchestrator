@@ -65,7 +65,7 @@ export function Sidebar() {
       {/* Footer */}
       <div className="px-4 py-3 border-t text-dim text-[10px]"
            style={{ borderColor: "var(--color-border)", fontFamily: "var(--font-mono)" }}>
-        v0.2.0 · CrewAI
+        v0.2.0
       </div>
     </aside>
   );

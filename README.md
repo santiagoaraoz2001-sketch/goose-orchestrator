@@ -1,13 +1,13 @@
 # goose-orchestrator
 
-A multi-model orchestrator-worker [MCP](https://modelcontextprotocol.io/) extension for [Goose](https://github.com/block/goose) with a browser-based dashboard. Routes prompts to specialized CrewAI worker agents with VRAM-aware hot-swapping.
+A multi-model orchestrator-worker [MCP](https://modelcontextprotocol.io/) extension for [Goose](https://github.com/block/goose) with a browser-based dashboard. Routes prompts to specialized worker models with VRAM-aware hot-swapping.
 
 **by Specific Labs**
 
 ## Features
 
 - **Automatic task routing** — orchestrator LLM decomposes prompts into a dependency graph of sub-tasks, each assigned to a specialized worker role
-- **CrewAI-powered workers** — each role runs as a CrewAI Agent with its own model, temperature, and tools
+- **Specialized workers** — each role runs with its own model, temperature, and context window
 - **VRAM-aware model pool** — LRU eviction ensures local models stay within a configurable memory budget; API models bypass the pool
 - **Speculative preloading** — the router predicts the next worker needed and begins loading it during the current step
 - **Parallel execution** — independent steps run concurrently up to a configurable worker limit
@@ -89,7 +89,7 @@ User Prompt → Orchestrator LLM (task classification)
                     ↓
         ┌───────────┼───────────┐
         ↓           ↓           ↓
-   CrewAI Agent  CrewAI Agent  CrewAI Agent   (parallel)
+    Worker A      Worker B      Worker C      (parallel)
    (research)    (code_gen)    (summarizer)
         ↓           ↓           ↓
         └───────────┼───────────┘
