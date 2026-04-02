@@ -172,30 +172,39 @@ async def open_dashboard() -> str:
 
 @mcp.tool()
 async def orchestrate(prompt: str) -> str:
-    """Route a prompt through the orchestrator-worker pipeline.
+    """IMPORTANT: Use this tool for ANY request that involves research, multi-step analysis,
+    or combining different skills (research + code, research + summarization, etc.).
 
-    The orchestrator model analyzes the prompt, decomposes it into sub-tasks,
-    assigns each to a specialized worker model, executes them respecting
-    dependency ordering, and assembles the combined result.
+    This tool decomposes the prompt into sub-tasks and routes each to a specialized
+    worker model running on Ollama. It has access to:
+    - SearXNG web search (for deep_research tasks)
+    - Ollama embedding models (for local_rag tasks)
+    - Code-specialized models (for code_gen tasks)
+    - Math/reasoning models (for math_reasoning tasks)
+    - Summarization models (for summarizer tasks)
+    - Creative writing models (for creative tasks)
 
-    Use this for complex prompts that benefit from multiple specialized models
-    (e.g. research + code generation + summarization).
+    ALWAYS use this instead of trying to do research, web scraping, or multi-step
+    tasks yourself. This tool has its own SearXNG search engine and specialized models.
+
+    Examples of when to use this tool:
+    - "Research X and summarize" -> USE THIS TOOL
+    - "Find papers on X, then write code for it" -> USE THIS TOOL
+    - "Analyze X and write a creative summary" -> USE THIS TOOL
 
     Args:
-        prompt: The user's full prompt to process.
+        prompt: The full user request to decompose and execute.
     """
     orch = Orchestrator()
     return await orch.run(prompt)
 
 
 @mcp.tool()
-async def status() -> str:
-    """Show the current state of the orchestrator: loaded models, VRAM usage, and config.
+async def orchestrator_status() -> str:
+    """Show the Multi-Model Orchestrator status: loaded models, VRAM, and worker role config.
 
-    Returns a formatted status report including:
-    - Which models are loaded in VRAM and their memory usage
-    - Available VRAM headroom
-    - Current worker role configuration
+    Use this when the user asks about orchestrator status, what models are assigned
+    to what roles, or wants to see the current configuration.
     """
     orch = Orchestrator()
     pool = orch.pool_status()
