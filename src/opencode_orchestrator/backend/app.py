@@ -15,13 +15,13 @@ from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
-from goose_orchestrator.config_manager import ConfigManager
-from goose_orchestrator.orchestrator import Orchestrator
+from opencode_orchestrator.config_manager import ConfigManager
+from opencode_orchestrator.orchestrator import Orchestrator
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(name)s %(levelname)s %(message)s")
 log = logging.getLogger(__name__)
 
-app = FastAPI(title="Goose Orchestrator", version="0.2.0")
+app = FastAPI(title="OpenCode Orchestrator", version="0.2.0")
 
 app.add_middleware(
     CORSMiddleware,
@@ -169,7 +169,7 @@ async def reset_workers():
 @app.get("/api/models/{provider}")
 async def list_models(provider: str):
     import os
-    from goose_orchestrator.providers import create_provider
+    from opencode_orchestrator.providers import create_provider
     cfg = ConfigManager()
     ep = cfg.provider_endpoint(provider)
     endpoint = ep.endpoint if ep else ""
@@ -188,7 +188,7 @@ async def list_models(provider: str):
 async def discover_all_models():
     """Return rich metadata for every available model across all providers."""
     import os
-    from goose_orchestrator.providers import create_provider
+    from opencode_orchestrator.providers import create_provider
     cfg = ConfigManager()
     results: list[dict] = []
 
@@ -373,9 +373,9 @@ else:
 # ── Entry point ──────────────────────────────────────────────────────────────
 
 def start():
-    """CLI entry point for goose-orchestrator-ui."""
+    """CLI entry point for opencode-orchestrator-ui."""
     import argparse
-    parser = argparse.ArgumentParser(description="Goose Orchestrator Web UI")
+    parser = argparse.ArgumentParser(description="OpenCode Orchestrator Web UI")
     parser.add_argument("--port", type=int, default=7432, help="Port (default: 7432)")
     parser.add_argument("--host", type=str, default="127.0.0.1", help="Host")
     parser.add_argument("--no-open", action="store_true", default=False, help="Don't open browser")

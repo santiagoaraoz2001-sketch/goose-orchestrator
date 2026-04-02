@@ -9,9 +9,9 @@ import time
 from collections import OrderedDict
 from dataclasses import dataclass
 
-from goose_orchestrator.config_manager import ConfigManager
-from goose_orchestrator.providers import create_provider
-from goose_orchestrator.providers.base import BaseProvider
+from opencode_orchestrator.config_manager import ConfigManager
+from opencode_orchestrator.providers import create_provider
+from opencode_orchestrator.providers.base import BaseProvider
 
 log = logging.getLogger(__name__)
 

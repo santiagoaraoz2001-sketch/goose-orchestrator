@@ -12,7 +12,7 @@ from typing import Any
 import yaml
 
 _DEFAULT_CONFIG_PATH = Path(__file__).resolve().parents[2] / "config" / "default_config.yaml"
-_USER_CONFIG_DIR = Path(os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config")) / "goose"
+_USER_CONFIG_DIR = Path(os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config")) / "opencode"
 _USER_CONFIG_PATH = _USER_CONFIG_DIR / "orchestrator_config.yaml"
 
 

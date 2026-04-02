@@ -7,13 +7,13 @@ import pytest
 import yaml
 from fastapi.testclient import TestClient
 
-from goose_orchestrator.config_manager import ConfigManager
+from opencode_orchestrator.config_manager import ConfigManager
 
 
 def _reset_singletons(config_path: str):
     ConfigManager._instance = None
     ConfigManager._config_path_override = config_path
-    from goose_orchestrator.orchestrator import Orchestrator
+    from opencode_orchestrator.orchestrator import Orchestrator
     Orchestrator._instance = None
 
 
@@ -32,7 +32,7 @@ def fresh_config():
 
 @pytest.fixture
 def client():
-    from goose_orchestrator.backend.app import app
+    from opencode_orchestrator.backend.app import app
     return TestClient(app)
 
 

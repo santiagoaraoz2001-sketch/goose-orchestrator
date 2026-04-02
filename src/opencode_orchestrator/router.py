@@ -7,8 +7,8 @@ import logging
 import re
 from dataclasses import dataclass, field
 
-from goose_orchestrator.config_manager import ConfigManager
-from goose_orchestrator.providers.base import BaseProvider, GenerateRequest
+from opencode_orchestrator.config_manager import ConfigManager
+from opencode_orchestrator.providers.base import BaseProvider, GenerateRequest
 
 log = logging.getLogger(__name__)
 

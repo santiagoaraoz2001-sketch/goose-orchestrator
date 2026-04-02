@@ -8,7 +8,7 @@ from functools import partial
 
 import requests
 
-from goose_orchestrator.providers.base import BaseProvider, GenerateRequest, GenerateResponse
+from opencode_orchestrator.providers.base import BaseProvider, GenerateRequest, GenerateResponse
 
 log = logging.getLogger(__name__)
 
@@ -95,7 +95,22 @@ class OllamaProvider(BaseProvider):
 
     # -- Generation -------------------------------------------------------
 
+    async def _get_model_max_ctx(self, model: str) -> int:
+        """Query the model's declared max context length from Ollama metadata."""
+        try:
+            data = await self._post("/api/show", {"name": model}, timeout=10)
+            model_info = data.get("model_info", {})
+            for k, v in model_info.items():
+                if "context" in k.lower() and "length" in k.lower():
+                    return int(v)
+        except Exception:
+            pass
+        return 4096  # fallback
+
     async def generate(self, req: GenerateRequest) -> GenerateResponse:
+        # Set num_ctx to the model's true max so Ollama doesn't truncate at 4096
+        max_ctx = await self._get_model_max_ctx(req.model)
+
         payload: dict = {
             "model": req.model,
             "prompt": req.prompt,
@@ -104,6 +119,7 @@ class OllamaProvider(BaseProvider):
             "options": {
                 "temperature": req.temperature,
                 "num_predict": req.max_tokens,
+                "num_ctx": max_ctx,
             },
         }
         if req.system:

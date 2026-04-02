@@ -1,9 +1,9 @@
 """LLM provider backends."""
 
-from goose_orchestrator.providers.base import BaseProvider, GenerateRequest, GenerateResponse
-from goose_orchestrator.providers.ollama_provider import OllamaProvider
-from goose_orchestrator.providers.openai_provider import OpenAIProvider
-from goose_orchestrator.providers.anthropic_provider import AnthropicProvider
+from opencode_orchestrator.providers.base import BaseProvider, GenerateRequest, GenerateResponse
+from opencode_orchestrator.providers.ollama_provider import OllamaProvider
+from opencode_orchestrator.providers.openai_provider import OpenAIProvider
+from opencode_orchestrator.providers.anthropic_provider import AnthropicProvider
 
 PROVIDER_REGISTRY: dict[str, type[BaseProvider]] = {
     "ollama": OllamaProvider,

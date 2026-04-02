@@ -1,13 +1,13 @@
 """CLI entry points — shell-callable orchestrator commands.
 
 These exist so models that can't call MCP tools directly (e.g. local Ollama models
-in Goose) can still invoke the orchestrator via Developer.shell / subprocess.
+in OpenCode) can still invoke the orchestrator via Developer.shell / subprocess.
 
 Usage:
-    goose-orchestrate "Research X, then summarize"
-    goose-orchestrate-status
-    goose-orchestrate-config
-    goose-orchestrate-configure-worker code_gen --model devstral-small-2:Q8_0
+    opencode-orchestrate "Research X, then summarize"
+    opencode-orchestrate-status
+    opencode-orchestrate-config
+    opencode-orchestrate-configure-worker code_gen --model devstral-small-2:Q8_0
 """
 
 from __future__ import annotations
@@ -40,7 +40,7 @@ def cli_orchestrate():
         print("Error: no prompt provided", file=sys.stderr)
         sys.exit(1)
 
-    from goose_orchestrator.orchestrator import Orchestrator
+    from opencode_orchestrator.orchestrator import Orchestrator
 
     async def _run():
         orch = Orchestrator()
@@ -52,8 +52,8 @@ def cli_orchestrate():
 
 def cli_status():
     """CLI: show orchestrator status."""
-    from goose_orchestrator.config_manager import ConfigManager
-    from goose_orchestrator.orchestrator import Orchestrator
+    from opencode_orchestrator.config_manager import ConfigManager
+    from opencode_orchestrator.orchestrator import Orchestrator
 
     async def _run():
         orch = Orchestrator()
@@ -90,7 +90,7 @@ def cli_status():
 def cli_config():
     """CLI: dump full config as YAML."""
     import yaml
-    from goose_orchestrator.config_manager import ConfigManager
+    from opencode_orchestrator.config_manager import ConfigManager
     cfg = ConfigManager()
     print(yaml.dump(cfg.raw, default_flow_style=False, sort_keys=False))
 
@@ -107,7 +107,7 @@ def cli_configure_worker():
     parser.add_argument("--disable", action="store_true", help="Disable role")
     args = parser.parse_args()
 
-    from goose_orchestrator.config_manager import ConfigManager
+    from opencode_orchestrator.config_manager import ConfigManager
     cfg = ConfigManager()
 
     updates = {}

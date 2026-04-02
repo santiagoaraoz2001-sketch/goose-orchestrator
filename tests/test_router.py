@@ -4,7 +4,7 @@ import tempfile
 
 import yaml
 
-from goose_orchestrator.router import TaskPlan, TaskStep, _extract_json
+from opencode_orchestrator.router import TaskPlan, TaskStep, _extract_json
 
 
 def test_extract_json_direct():

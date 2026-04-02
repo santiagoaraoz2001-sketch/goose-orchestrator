@@ -13,7 +13,7 @@ export function TopBar() {
            }} />
 
       <span className="text-dim text-xs tracking-wide" style={{ fontFamily: "var(--font-mono)" }}>
-        goose-orchestrator
+        opencode-orchestrator
       </span>
       <span className="ml-auto text-dim text-xs">by Specific Labs</span>
     </header>

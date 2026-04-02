@@ -9,8 +9,8 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../../.." 2>/dev/null && pwd)" || REPO_ROOT="$SCRIPT_DIR"
 
 PORT=7432
-PID_FILE="/tmp/goose-orchestrator.pid"
-LOG_FILE="/tmp/goose-orchestrator.log"
+PID_FILE="/tmp/opencode-orchestrator.pid"
+LOG_FILE="/tmp/opencode-orchestrator.log"
 
 cleanup() {
     if [ -f "$PID_FILE" ]; then
@@ -48,7 +48,7 @@ fi
 
 # Start backend
 cd "$REPO_ROOT"
-$UV run --project "$REPO_ROOT" goose-orchestrator-ui --port "$PORT" --no-open > "$LOG_FILE" 2>&1 &
+$UV run --project "$REPO_ROOT" opencode-orchestrator-ui --port "$PORT" --no-open > "$LOG_FILE" 2>&1 &
 echo $! > "$PID_FILE"
 
 # Wait for server to be ready (up to 30s)

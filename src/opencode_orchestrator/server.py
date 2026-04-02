@@ -1,6 +1,6 @@
-"""FastMCP server — exposes orchestrator tools to Goose.
+"""FastMCP server — exposes orchestrator tools to OpenCode.
 
-All configuration is done through MCP tools that Goose renders natively in its UI,
+All configuration is done through MCP tools that OpenCode renders natively in its UI,
 rather than through a separate Gradio/web interface.
 """
 
@@ -11,22 +11,22 @@ import logging
 
 from mcp.server.fastmcp import FastMCP
 
-from goose_orchestrator.config_manager import ConfigManager
-from goose_orchestrator.orchestrator import Orchestrator
+from opencode_orchestrator.config_manager import ConfigManager
+from opencode_orchestrator.orchestrator import Orchestrator
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(name)s %(levelname)s %(message)s")
 log = logging.getLogger(__name__)
 
-mcp = FastMCP("goose-orchestrator")
+mcp = FastMCP("opencode-orchestrator")
 
 # =============================================================================
-# System-level instruction resource — Goose reads this to understand the tool
+# System-level instruction resource — OpenCode reads this to understand the tool
 # =============================================================================
 
 SYSTEM_INSTRUCTIONS = """\
-# Goose Orchestrator — Multi-Model Agent Extension
+# OpenCode Orchestrator — Multi-Model Agent Extension
 
-You have access to the **goose-orchestrator** extension, which lets you decompose \
+You have access to the **opencode-orchestrator** extension, which lets you decompose \
 complex tasks into sub-tasks and route each to a specialized worker model. \
 This is useful when a single model isn't optimal for every part of a request — e.g. \
 research requires a different model than code generation or mathematical reasoning.
@@ -90,7 +90,7 @@ entirely. Use `reset_workers` to free all VRAM except the orchestrator.
 ## Web UI
 
 The extension also provides a browser dashboard at http://localhost:7432 (launched \
-via `goose-orchestrator-ui`). The user can configure everything from either the \
+via `opencode-orchestrator-ui`). The user can configure everything from either the \
 chat tools or the web UI — they share the same config file.
 
 ## Important notes
@@ -103,7 +103,7 @@ chat tools or the web UI — they share the same config file.
 """
 
 
-@mcp.resource("goose://orchestrator/instructions")
+@mcp.resource("opencode://orchestrator/instructions")
 def get_instructions() -> str:
     """System instructions for how the LLM should use this extension."""
     return SYSTEM_INSTRUCTIONS
@@ -137,7 +137,7 @@ async def open_dashboard() -> str:
             subprocess.Popen(
                 ["uv", "run", "--project",
                  str(__import__("pathlib").Path(__file__).resolve().parents[2]),
-                 "goose-orchestrator-ui", "--port", "7432"],
+                 "opencode-orchestrator-ui", "--port", "7432"],
                 stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
             )
             time.sleep(2)
@@ -256,7 +256,7 @@ async def reset_workers() -> str:
 
 
 # =============================================================================
-# Configuration tools (Goose-native UI)
+# Configuration tools (OpenCode-native UI)
 # =============================================================================
 
 @mcp.tool()

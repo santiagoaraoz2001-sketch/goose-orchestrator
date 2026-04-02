@@ -1,4 +1,4 @@
-# goose-orchestrator
+# opencode-orchestrator
 
 A multi-model orchestrator-worker [MCP](https://modelcontextprotocol.io/) extension for [Goose](https://github.com/block/goose) with a browser-based dashboard. Routes prompts to specialized worker models with VRAM-aware hot-swapping.
 
@@ -14,7 +14,7 @@ A multi-model orchestrator-worker [MCP](https://modelcontextprotocol.io/) extens
 - **Browser dashboard** — full React UI with Blueprint design system (dark theme, live execution monitoring, config management)
 - **macOS .app launcher** — double-click to start the server and open the UI
 - **Multi-provider** — supports Ollama (local), OpenAI-compatible APIs, and Anthropic
-- **Goose MCP integration** — also works as a native Goose extension via MCP tools
+- **OpenCode MCP integration** — also works as a native Goose extension via MCP tools
 
 ## Default Worker Roles
 
@@ -41,27 +41,27 @@ All roles are fully customizable via the UI or MCP tools.
 ### Install & Run (Browser UI)
 
 ```bash
-git clone https://github.com/santiagoaraoz2001-sketch/goose-orchestrator.git
-cd goose-orchestrator
+git clone https://github.com/santiagoaraoz2001-sketch/opencode-orchestrator.git
+cd opencode-orchestrator
 
 # Build everything
 uv sync
 cd frontend && npm install && npm run build && cd ..
 
 # Launch (opens browser to http://localhost:7432)
-uv run goose-orchestrator-ui
+uv run opencode-orchestrator-ui
 ```
 
 ### macOS App (one-click launcher)
 
 ```bash
 bash build-app.sh
-cp -r "dist/Goose Orchestrator.app" /Applications/
+cp -r "dist/OpenCode Orchestrator.app" /Applications/
 ```
 
 Then launch from Spotlight or your Applications folder.
 
-### Goose MCP Extension
+### OpenCode MCP Extension
 
 Add to `~/.config/goose/config.yaml`:
 
@@ -75,8 +75,8 @@ extensions:
     args:
       - run
       - --project
-      - /path/to/goose-orchestrator
-      - goose-orchestrator
+      - /path/to/opencode-orchestrator
+      - opencode-orchestrator
     timeout: 600
 ```
 
@@ -119,7 +119,7 @@ The **Model Pool** enforces a strict VRAM budget with LRU eviction. The orchestr
 
 ```bash
 # Backend (hot-reload)
-uv run uvicorn goose_orchestrator.backend.app:app --reload --port 7432
+uv run uvicorn opencode_orchestrator.backend.app:app --reload --port 7432
 
 # Frontend (Vite dev server with proxy)
 cd frontend && npm run dev

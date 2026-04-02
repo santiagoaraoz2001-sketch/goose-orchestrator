@@ -7,10 +7,10 @@ import logging
 import time
 from dataclasses import dataclass
 
-from goose_orchestrator.config_manager import ConfigManager
-from goose_orchestrator.model_pool import ModelPool
-from goose_orchestrator.providers.base import GenerateRequest, GenerateResponse
-from goose_orchestrator.router import TaskStep
+from opencode_orchestrator.config_manager import ConfigManager
+from opencode_orchestrator.model_pool import ModelPool
+from opencode_orchestrator.providers.base import GenerateRequest, GenerateResponse
+from opencode_orchestrator.router import TaskStep
 
 log = logging.getLogger(__name__)
 
@@ -198,7 +198,7 @@ class WorkerDispatcher:
         if not tools:
             return ""
 
-        from goose_orchestrator.tools import searxng_search, searxng_fetch_url, embed_and_rank
+        from opencode_orchestrator.tools import searxng_search, searxng_fetch_url, embed_and_rank
 
         parts: list[str] = []
 

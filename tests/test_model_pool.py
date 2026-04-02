@@ -6,14 +6,14 @@ from unittest.mock import AsyncMock, patch
 
 import yaml
 
-from goose_orchestrator.config_manager import ConfigManager
-from goose_orchestrator.model_pool import ModelPool
+from opencode_orchestrator.config_manager import ConfigManager
+from opencode_orchestrator.model_pool import ModelPool
 
 
 def _reset_singletons(config_path: str):
     ConfigManager._instance = None
     ConfigManager._config_path_override = config_path
-    from goose_orchestrator.orchestrator import Orchestrator
+    from opencode_orchestrator.orchestrator import Orchestrator
     Orchestrator._instance = None
 
 
@@ -51,8 +51,8 @@ def test_pool_vram_accounting():
     pool = ModelPool()
 
     # Simulate loaded models by directly manipulating internal state
-    from goose_orchestrator.model_pool import LoadedModel
-    from goose_orchestrator.providers.ollama_provider import OllamaProvider
+    from opencode_orchestrator.model_pool import LoadedModel
+    from opencode_orchestrator.providers.ollama_provider import OllamaProvider
     import time
 
     mock_provider = OllamaProvider(endpoint="http://localhost:11434")
@@ -77,8 +77,8 @@ def test_lru_victim_skips_orchestrator():
 
     pool = ModelPool()
 
-    from goose_orchestrator.model_pool import LoadedModel
-    from goose_orchestrator.providers.ollama_provider import OllamaProvider
+    from opencode_orchestrator.model_pool import LoadedModel
+    from opencode_orchestrator.providers.ollama_provider import OllamaProvider
     import time
 
     mock_provider = OllamaProvider(endpoint="http://localhost:11434")

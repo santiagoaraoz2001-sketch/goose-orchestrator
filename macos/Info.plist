@@ -5,11 +5,11 @@
     <key>CFBundleExecutable</key>
     <string>launch</string>
     <key>CFBundleIdentifier</key>
-    <string>com.specificlabs.goose-orchestrator</string>
+    <string>com.specificlabs.opencode-orchestrator</string>
     <key>CFBundleName</key>
-    <string>Goose Orchestrator</string>
+    <string>OpenCode Orchestrator</string>
     <key>CFBundleDisplayName</key>
-    <string>Goose Orchestrator</string>
+    <string>OpenCode Orchestrator</string>
     <key>CFBundleVersion</key>
     <string>0.2.0</string>
     <key>CFBundleShortVersionString</key>

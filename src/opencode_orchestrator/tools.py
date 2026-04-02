@@ -8,7 +8,7 @@ from functools import partial
 
 import requests
 
-from goose_orchestrator.config_manager import ConfigManager
+from opencode_orchestrator.config_manager import ConfigManager
 
 log = logging.getLogger(__name__)
 
@@ -62,7 +62,7 @@ async def searxng_fetch_url(url: str) -> str:
     loop = asyncio.get_event_loop()
 
     def _do():
-        resp = requests.get(url, timeout=30, headers={"User-Agent": "GooseOrchestrator/0.2"})
+        resp = requests.get(url, timeout=30, headers={"User-Agent": "OpenCodeOrchestrator/0.2"})
         resp.raise_for_status()
         return resp.text[:10000]  # Cap at 10k chars
 

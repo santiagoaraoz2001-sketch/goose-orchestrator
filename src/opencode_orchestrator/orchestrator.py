@@ -5,10 +5,10 @@ from __future__ import annotations
 import logging
 import time
 
-from goose_orchestrator.config_manager import ConfigManager
-from goose_orchestrator.model_pool import ModelPool
-from goose_orchestrator.router import TaskPlan, TaskRouter
-from goose_orchestrator.worker import StepResult, WorkerDispatcher
+from opencode_orchestrator.config_manager import ConfigManager
+from opencode_orchestrator.model_pool import ModelPool
+from opencode_orchestrator.router import TaskPlan, TaskRouter
+from opencode_orchestrator.worker import StepResult, WorkerDispatcher
 
 log = logging.getLogger(__name__)
 

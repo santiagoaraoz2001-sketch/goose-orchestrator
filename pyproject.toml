@@ -1,7 +1,7 @@
 [project]
-name = "goose-orchestrator"
+name = "opencode-orchestrator"
 version = "0.1.0"
-description = "Multi-model orchestrator-worker extension for Goose"
+description = "Multi-model orchestrator-worker extension for OpenCode"
 requires-python = ">=3.12"
 dependencies = [
     "mcp[cli]>=1.25.0",
@@ -13,22 +13,22 @@ dependencies = [
 ]
 
 [project.scripts]
-goose-orchestrator = "goose_orchestrator:main"
-goose-orchestrator-ui = "goose_orchestrator.backend.app:start"
-goose-orchestrate = "goose_orchestrator.cli:cli_orchestrate"
-goose-orchestrate-status = "goose_orchestrator.cli:cli_status"
-goose-orchestrate-config = "goose_orchestrator.cli:cli_config"
-goose-orchestrate-worker = "goose_orchestrator.cli:cli_configure_worker"
+opencode-orchestrator = "opencode_orchestrator:main"
+opencode-orchestrator-ui = "opencode_orchestrator.backend.app:start"
+opencode-orchestrate = "opencode_orchestrator.cli:cli_orchestrate"
+opencode-orchestrate-status = "opencode_orchestrator.cli:cli_status"
+opencode-orchestrate-config = "opencode_orchestrator.cli:cli_config"
+opencode-orchestrate-worker = "opencode_orchestrator.cli:cli_configure_worker"
 
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/goose_orchestrator"]
+packages = ["src/opencode_orchestrator"]
 
 [tool.hatch.build.targets.wheel.shared-data]
-"frontend/dist" = "goose_orchestrator/frontend_dist"
+"frontend/dist" = "opencode_orchestrator/frontend_dist"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

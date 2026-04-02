@@ -1,5 +1,5 @@
 #!/bin/bash
-# Build Goose Orchestrator — creates the browser app + macOS .app launcher
+# Build OpenCode Orchestrator — creates the browser app + macOS .app launcher
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -15,7 +15,7 @@ npm run build
 cd ..
 
 echo "=== Step 3: Create macOS .app bundle ==="
-APP_NAME="Goose Orchestrator.app"
+APP_NAME="OpenCode Orchestrator.app"
 APP_DIR="dist/$APP_NAME"
 
 rm -rf "dist/$APP_NAME"
@@ -32,7 +32,7 @@ if [ -f macos/icon.icns ]; then
     cp macos/icon.icns "$APP_DIR/Contents/Resources/icon.icns"
 else
     echo "  (No icon.icns found, generating placeholder)"
-    ICONSET_DIR="/tmp/goose-orchestrator-icon.iconset"
+    ICONSET_DIR="/tmp/opencode-orchestrator-icon.iconset"
     rm -rf "$ICONSET_DIR"
     mkdir -p "$ICONSET_DIR"
 
@@ -57,13 +57,13 @@ fi
 
 echo "=== Step 4: Create release archive ==="
 cd dist
-tar -czf "goose-orchestrator-macos.tar.gz" "$APP_NAME"
+tar -czf "opencode-orchestrator-macos.tar.gz" "$APP_NAME"
 cd ..
 
 echo ""
 echo "✓ Build complete!"
 echo "  App:     dist/$APP_NAME"
-echo "  Archive: dist/goose-orchestrator-macos.tar.gz"
+echo "  Archive: dist/opencode-orchestrator-macos.tar.gz"
 echo ""
-echo "To install: drag 'Goose Orchestrator.app' to /Applications"
+echo "To install: drag 'OpenCode Orchestrator.app' to /Applications"
 echo "Or run: cp -r \"dist/$APP_NAME\" /Applications/"

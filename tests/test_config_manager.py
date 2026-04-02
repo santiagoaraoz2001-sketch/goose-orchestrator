@@ -5,7 +5,7 @@ from pathlib import Path
 
 import yaml
 
-from goose_orchestrator.config_manager import ConfigManager
+from opencode_orchestrator.config_manager import ConfigManager
 
 
 def _fresh_manager(config_path: str) -> ConfigManager:

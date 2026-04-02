@@ -9,7 +9,7 @@ from functools import partial
 
 import requests
 
-from goose_orchestrator.providers.base import BaseProvider, GenerateRequest, GenerateResponse
+from opencode_orchestrator.providers.base import BaseProvider, GenerateRequest, GenerateResponse
 
 log = logging.getLogger(__name__)
 
