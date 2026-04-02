@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "orchestrator-ui",
+      "runtimeExecutable": "uv",
+      "runtimeArgs": ["run", "--project", "/Users/santiagoaraoz/Desktop/goose-orchestrator", "goose-orchestrator-ui", "--port", "7432", "--no-open"],
+      "port": 7432
+    }
+  ]
+}

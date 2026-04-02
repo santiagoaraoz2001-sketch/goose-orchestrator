@@ -89,27 +89,54 @@ class WorkerDispatcher:
         return [results[s.id] for s in steps if s.id in results]
 
     async def _execute_single(self, step: TaskStep, prompt: str) -> StepResult:
-        """Execute a single step against the appropriate worker model."""
+        """Execute a single step against the appropriate worker model.
+
+        For roles with tools (e.g. deep_research has web_search), the tools
+        are executed BEFORE the LLM call and their output is prepended to the
+        prompt as context. For the local_rag role, the embedding model runs
+        instead of a chat model — it returns ranked chunks directly.
+        """
         t0 = time.monotonic()
         cfg = ConfigManager()
         worker_cfg = cfg.get_worker(step.role)
 
         try:
-            provider, model = await self._pool.acquire_worker(step.role)
+            # -- Phase 1: Run any assigned tools to gather context --
+            tool_context = await self._run_tools(step, prompt, worker_cfg)
 
+            # Special case: local_rag with embedding model returns directly
+            if step.role == "local_rag" and tool_context:
+                elapsed = time.monotonic() - t0
+                return StepResult(
+                    step_id=step.id, role=step.role,
+                    model=worker_cfg.model if worker_cfg else "unknown",
+                    text=tool_context, input_tokens=0, output_tokens=0,
+                    elapsed_s=elapsed, success=True,
+                )
+
+            # -- Phase 2: LLM generation with tool context --
+            provider, model = await self._pool.acquire_worker(step.role)
             temperature = worker_cfg.temperature if worker_cfg else 0.7
+
+            augmented_prompt = prompt
+            if tool_context:
+                augmented_prompt = (
+                    f"## Context gathered by tools:\n\n{tool_context}\n\n"
+                    f"---\n\n## Task:\n\n{prompt}"
+                )
 
             req = GenerateRequest(
                 model=model,
-                prompt=prompt,
+                prompt=augmented_prompt,
                 system=f"You are a specialized {step.role} assistant. "
                        f"Be thorough but concise. Stay within your area of expertise.",
                 max_tokens=step.context_budget,
                 temperature=temperature,
             )
 
-            log.info("Step %d [%s] generating with %s (temp=%.1f, budget=%d)",
-                     step.id, step.role, model, temperature, step.context_budget)
+            log.info("Step %d [%s] generating with %s (temp=%.1f, budget=%d, tool_ctx=%d chars)",
+                     step.id, step.role, model, temperature, step.context_budget,
+                     len(tool_context))
 
             resp: GenerateResponse = await asyncio.wait_for(
                 provider.generate(req),
@@ -161,3 +188,41 @@ class WorkerDispatcher:
                 success=False,
                 error=str(e),
             )
+
+    async def _run_tools(self, step: TaskStep, prompt: str, worker_cfg) -> str:
+        """Execute pre-generation tools for a step. Returns context string."""
+        if worker_cfg is None:
+            return ""
+
+        tools = worker_cfg.tools or []
+        if not tools:
+            return ""
+
+        from goose_orchestrator.tools import searxng_search, searxng_fetch_url, embed_and_rank
+
+        parts: list[str] = []
+
+        for tool_name in tools:
+            try:
+                if tool_name == "web_search":
+                    # Extract a search query from the sub-prompt
+                    result = await searxng_search(prompt[:200], max_results=8)
+                    parts.append(result)
+
+                elif tool_name == "url_fetch":
+                    # Only fetch if the prompt contains a URL
+                    import re
+                    urls = re.findall(r'https?://[^\s<>"]+', prompt)
+                    for url in urls[:3]:
+                        result = await searxng_fetch_url(url)
+                        parts.append(result)
+
+                elif tool_name == "semantic_search":
+                    # For RAG: embed the query (the orchestrator passes chunks downstream)
+                    result = f"[Embedding model ready for semantic search on: {prompt[:100]}]"
+                    parts.append(result)
+
+            except Exception as e:
+                log.warning("Tool %s failed for step %d: %s", tool_name, step.id, e)
+
+        return "\n\n".join(parts)

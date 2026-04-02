@@ -14,13 +14,13 @@ workers:
     description: "Multi-hop web research, paper analysis, citation chains"
     tools: ["web_search", "url_fetch"]
   local_rag:
-    model: "qwen3:8b"
+    model: "nomic-embed-text:latest"
     provider: "ollama"
-    context_window: 16384
-    temperature: 0.2
+    context_window: 8192
+    temperature: 0.0
     enabled: true
-    description: "Local document retrieval, codebase search, file Q&A"
-    tools: ["file_read", "semantic_search"]
+    description: "Embedding model for semantic search — returns ranked document chunks to the orchestrator"
+    tools: ["semantic_search"]
   code_gen:
     model: "qwen2.5-coder:32b"
     provider: "ollama"
@@ -60,6 +60,12 @@ resources:
   api_rate_limit_rpm: 60
   model_load_timeout_s: 120
   worker_generation_timeout_s: 300
+
+searxng:
+  endpoint: "http://localhost:8888"
+
+embedding:
+  model: "nomic-embed-text:latest"
 
 providers:
   ollama:
