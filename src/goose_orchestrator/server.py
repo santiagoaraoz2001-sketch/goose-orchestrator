@@ -59,7 +59,13 @@ The user can add, remove, or reconfigure roles. Use `status` to see current conf
 
 ## Configuration workflow
 
-When the user wants to change model assignments:
+When the user wants to visually configure models, roles, or settings:
+
+1. **Use `open_dashboard`** — this launches the browser UI with model dropdowns, \
+   role cards, temperature sliders, and VRAM monitoring. This is the PREFERRED way \
+   for users to configure the orchestrator.
+
+For quick chat-based changes (no UI needed):
 
 1. Use `status` to show current config (which models are assigned to which roles)
 2. Use `configure_worker` to change a role's model, provider, temperature, or context window
@@ -101,6 +107,63 @@ chat tools or the web UI — they share the same config file.
 def get_instructions() -> str:
     """System instructions for how the LLM should use this extension."""
     return SYSTEM_INSTRUCTIONS
+
+
+# =============================================================================
+# UI launcher
+# =============================================================================
+
+@mcp.tool()
+async def open_dashboard() -> str:
+    """Open the orchestrator dashboard in the browser.
+
+    Launches the web UI at http://localhost:7432 where you can:
+    - See all worker roles with their assigned models
+    - Change models for each role via dropdown (auto-populated from Ollama)
+    - Adjust temperature, context window, and enable/disable per role
+    - Configure the orchestrator model and provider
+    - Monitor VRAM usage and loaded models
+    - Run orchestration tasks with live streaming output
+
+    Call this whenever the user wants to configure models, view roles,
+    or manage the orchestrator visually.
+    """
+    import subprocess
+    import threading
+    import time
+
+    def _start():
+        try:
+            subprocess.Popen(
+                ["uv", "run", "--project",
+                 str(__import__("pathlib").Path(__file__).resolve().parents[2]),
+                 "goose-orchestrator-ui", "--port", "7432"],
+                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+            )
+            time.sleep(2)
+            import webbrowser
+            webbrowser.open("http://localhost:7432")
+        except Exception:
+            pass
+
+    # Check if already running
+    import requests
+    try:
+        requests.get("http://127.0.0.1:7432/api/status", timeout=1)
+        import webbrowser
+        webbrowser.open("http://localhost:7432")
+        return "Dashboard already running — opened http://localhost:7432 in your browser."
+    except Exception:
+        threading.Thread(target=_start, daemon=True).start()
+        return (
+            "Starting dashboard server... Opening http://localhost:7432 in your browser.\n\n"
+            "The dashboard lets you:\n"
+            "- **Models page**: Select models for each worker role via dropdown\n"
+            "- **Workers page**: Add/remove roles, adjust temperature & context\n"
+            "- **Settings page**: Configure orchestrator model & resource limits\n"
+            "- **Status page**: Monitor VRAM usage and loaded models\n"
+            "- **Dashboard**: Run orchestration tasks with live output"
+        )
 
 
 # =============================================================================
