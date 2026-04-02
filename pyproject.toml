@@ -15,6 +15,10 @@ dependencies = [
 [project.scripts]
 goose-orchestrator = "goose_orchestrator:main"
 goose-orchestrator-ui = "goose_orchestrator.backend.app:start"
+goose-orchestrate = "goose_orchestrator.cli:cli_orchestrate"
+goose-orchestrate-status = "goose_orchestrator.cli:cli_status"
+goose-orchestrate-config = "goose_orchestrator.cli:cli_config"
+goose-orchestrate-worker = "goose_orchestrator.cli:cli_configure_worker"
 
 [build-system]
 requires = ["hatchling"]
