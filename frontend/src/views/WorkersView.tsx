@@ -15,13 +15,17 @@ interface WorkerCfg {
   tools?: string[];
 }
 
-const ROLE_COLORS: Record<string, string> = {
-  deep_research: COLORS.blue,
-  local_rag: COLORS.teal,
-  code_gen: COLORS.cyan,
-  summarizer: COLORS.amber,
-  math_reasoning: COLORS.purple,
-  creative: COLORS.pink,
+const ROLE_META: Record<string, { color: string; icon: string; label: string; hint: string }> = {
+  deep_research: { color: COLORS.blue, icon: "🔍", label: "Deep Research", hint: "Large-context models (32B+), strong reasoning" },
+  local_rag: { color: COLORS.teal, icon: "📂", label: "Local RAG", hint: "Small fast models (7-14B), good instruction following" },
+  code_gen: { color: COLORS.cyan, icon: "💻", label: "Code Generation", hint: "Code-specialized models (Devstral, Qwen-Coder)" },
+  summarizer: { color: COLORS.amber, icon: "📝", label: "Summarizer", hint: "Small fast models (7-14B), low latency" },
+  math_reasoning: { color: COLORS.purple, icon: "🧮", label: "Math & Reasoning", hint: "Thinking-capable models (Qwen3, Command-R)" },
+  creative: { color: COLORS.pink, icon: "✨", label: "Creative Writing", hint: "Larger models (32B+), high temperature" },
+};
+
+const getRoleMeta = (role: string) => ROLE_META[role] || {
+  color: COLORS.dim, icon: "⚙️", label: role.replace(/_/g, " "), hint: "Custom role",
 };
 
 export default function WorkersView() {
@@ -115,11 +119,17 @@ export default function WorkersView() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {Object.entries(workers).map(([role, cfg]) => (
-          <PanelCard key={role} accent={ROLE_COLORS[role] || COLORS.dim}>
-            <div className="flex items-center justify-between mb-3">
+        {Object.entries(workers).map(([role, cfg]) => {
+          const meta = getRoleMeta(role);
+          return (
+          <PanelCard key={role} accent={meta.color}>
+            <div className="flex items-center justify-between mb-1">
               <div className="flex items-center gap-2">
-                <span className="text-sm font-semibold text-text">{role.replace(/_/g, " ")}</span>
+                <span className="text-base">{meta.icon}</span>
+                <div>
+                  <span className="text-sm font-semibold text-text">{meta.label}</span>
+                  <span className="text-dim text-[9px] ml-1.5">{role}</span>
+                </div>
                 <StatusBadge status={cfg.enabled ? "active" : "idle"} size="sm" />
               </div>
               <div className="flex gap-1">
@@ -138,7 +148,8 @@ export default function WorkersView() {
               </div>
             </div>
 
-            <p className="text-dim text-[11px] mb-3">{cfg.description}</p>
+            <p className="text-dim text-[11px] mb-1">{cfg.description}</p>
+            <p className="text-[10px] mb-3 italic" style={{ color: meta.color + "aa" }}>{meta.hint}</p>
 
             <div className="grid grid-cols-2 gap-3">
               {/* Model */}
@@ -223,7 +234,8 @@ export default function WorkersView() {
               <span className="text-dim text-xs">Enabled</span>
             </label>
           </PanelCard>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

@@ -157,13 +157,51 @@ export default function ModelsView() {
   if (!orch) return <div className="text-dim">Loading...</div>;
 
   const orchModels = availableModels[orch.provider] || [];
-  const ROLE_ACCENT: Record<string, string> = {
-    deep_research: COLORS.blue,
-    local_rag: COLORS.teal,
-    code_gen: COLORS.cyan,
-    summarizer: COLORS.amber,
-    math_reasoning: COLORS.purple,
-    creative: COLORS.pink,
+
+  const ROLE_META: Record<string, { accent: string; icon: string; label: string; hint: string }> = {
+    deep_research: {
+      accent: COLORS.blue,
+      icon: "🔍",
+      label: "Deep Research",
+      hint: "Best with large-context models (32B+). Needs strong reasoning and factual grounding.",
+    },
+    local_rag: {
+      accent: COLORS.teal,
+      icon: "📂",
+      label: "Local RAG",
+      hint: "Small, fast models work well (7-14B). Needs good instruction following for retrieval tasks.",
+    },
+    code_gen: {
+      accent: COLORS.cyan,
+      icon: "💻",
+      label: "Code Generation",
+      hint: "Use a code-specialized model (e.g. Devstral, Qwen-Coder, DeepSeek-Coder). 14B+ recommended.",
+    },
+    summarizer: {
+      accent: COLORS.amber,
+      icon: "📝",
+      label: "Summarizer",
+      hint: "Small, fast models are ideal (7-14B). Low latency matters more than model size here.",
+    },
+    math_reasoning: {
+      accent: COLORS.purple,
+      icon: "🧮",
+      label: "Math & Reasoning",
+      hint: "Needs strong CoT reasoning. Use thinking-capable models (Qwen3, Command-R). 14B+ recommended.",
+    },
+    creative: {
+      accent: COLORS.pink,
+      icon: "✨",
+      label: "Creative Writing",
+      hint: "Larger models produce better prose. High temperature (0.8-1.0). 32B+ for best results.",
+    },
+  };
+
+  const getRoleMeta = (role: string) => ROLE_META[role] || {
+    accent: COLORS.dim,
+    icon: "⚙️",
+    label: role.replace(/_/g, " "),
+    hint: "Custom worker role. Assign any model.",
   };
 
   return (
@@ -260,24 +298,25 @@ export default function ModelsView() {
 
       <div className="space-y-2">
         {Object.entries(workers).map(([role, cfg]) => {
-          const accent = ROLE_ACCENT[role] || COLORS.dim;
+          const meta = getRoleMeta(role);
           const expanded = expandedWorker === role;
           const wModels = availableModels[cfg.provider] || [];
 
           return (
             <div key={role}
               className="bp-panel transition-all duration-150"
-              style={{ borderLeftColor: accent, borderLeftWidth: 2 }}>
+              style={{ borderLeftColor: meta.accent, borderLeftWidth: 2 }}>
 
               {/* Collapsed row */}
               <div className="flex items-center gap-3 px-4 py-3 cursor-pointer select-none"
                 onClick={() => setExpandedWorker(expanded ? null : role)}>
 
-                <div className="w-2 h-2 rounded-full" style={{ background: cfg.enabled ? accent : COLORS.dim }} />
+                <span className="text-base shrink-0" title={meta.label}>{meta.icon}</span>
 
-                <span className="text-sm font-medium text-text flex-shrink-0 w-36">
-                  {role.replace(/_/g, " ")}
-                </span>
+                <div className="flex flex-col flex-shrink-0 w-36">
+                  <span className="text-sm font-medium text-text leading-tight">{meta.label}</span>
+                  <span className="text-[9px] text-dim leading-tight">{role}</span>
+                </div>
 
                 <span className="bp-mono-data flex-1 truncate">{cfg.model}</span>
 
@@ -307,7 +346,10 @@ export default function ModelsView() {
                 <div className="px-4 pb-4 pt-1 border-t animate-view-enter"
                   style={{ borderColor: "var(--color-border)" }}>
 
-                  <p className="text-dim text-[11px] mb-3">{cfg.description}</p>
+                  <p className="text-dim text-[11px] mb-1">{cfg.description}</p>
+                  <p className="text-[10px] mb-3 italic" style={{ color: meta.accent + "aa" }}>
+                    {meta.hint}
+                  </p>
 
                   <div className="grid grid-cols-2 gap-x-6 gap-y-3">
                     {/* Provider */}
