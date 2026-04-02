@@ -19,6 +19,89 @@ log = logging.getLogger(__name__)
 
 mcp = FastMCP("goose-orchestrator")
 
+# =============================================================================
+# System-level instruction resource — Goose reads this to understand the tool
+# =============================================================================
+
+SYSTEM_INSTRUCTIONS = """\
+# Goose Orchestrator — Multi-Model Agent Extension
+
+You have access to the **goose-orchestrator** extension, which lets you decompose \
+complex tasks into sub-tasks and route each to a specialized worker model via CrewAI. \
+This is useful when a single model isn't optimal for every part of a request — e.g. \
+research requires a different model than code generation or mathematical reasoning.
+
+## When to use `orchestrate`
+
+Use the `orchestrate` tool when the user's request involves **two or more distinct \
+cognitive tasks** that would benefit from different model specializations. Examples:
+
+- "Research X, then write code implementing it" → deep_research + code_gen
+- "Analyze this data and write a creative summary" → math_reasoning + creative
+- "Find papers on Y, extract key findings, then produce a report" → deep_research + summarizer
+- "Debug this code and explain the fix simply" → code_gen + summarizer
+
+Do NOT use `orchestrate` for simple, single-domain requests that you can handle \
+directly (e.g. "fix this typo", "what is 2+2", "write a haiku").
+
+## Available worker roles (default)
+
+| Role | Specialization | Default temp |
+|------|---------------|-------------|
+| `deep_research` | Multi-hop web research, paper analysis, citation chains | 0.4 |
+| `local_rag` | Local document retrieval, codebase search, file Q&A | 0.2 |
+| `code_gen` | Code generation, refactoring, debugging, test writing | 0.3 |
+| `summarizer` | Condensing large outputs, report writing, key point extraction | 0.5 |
+| `math_reasoning` | Formal proofs, calculations, step-by-step logical reasoning | 0.1 |
+| `creative` | Creative writing, brainstorming, ideation, storytelling | 0.9 |
+
+The user can add, remove, or reconfigure roles. Use `status` to see current config.
+
+## Configuration workflow
+
+When the user wants to change model assignments:
+
+1. Use `status` to show current config (which models are assigned to which roles)
+2. Use `configure_worker` to change a role's model, provider, temperature, or context window
+3. Use `configure_orchestrator` to change the planning model itself
+4. Use `set_max_workers` to control parallelism (higher = more VRAM usage)
+5. Use `set_vram_budget` to set the memory ceiling for local models
+
+## Model provider details
+
+- **ollama**: Local models. The pool loads/unloads them from VRAM using Ollama's \
+  keep_alive API. Only the orchestrator + active worker(s) are loaded at any time.
+- **openai**: API-based (OpenAI, vLLM, LM Studio). Zero VRAM cost. Always available.
+- **anthropic**: API-based (Claude models). Zero VRAM cost. Always available.
+
+## VRAM management
+
+The system enforces a strict VRAM budget. When a new worker model needs to load \
+and VRAM is full, the least-recently-used worker model is evicted first. The \
+orchestrator model is pinned and never evicted. API-backed models skip the pool \
+entirely. Use `reset_workers` to free all VRAM except the orchestrator.
+
+## Web UI
+
+The extension also provides a browser dashboard at http://localhost:7432 (launched \
+via `goose-orchestrator-ui`). The user can configure everything from either the \
+chat tools or the web UI — they share the same config file.
+
+## Important notes
+
+- Always call `status` first if the user asks about current configuration
+- The orchestrator model does the planning; worker models do the execution
+- Temperature is per-role: low for precision tasks, high for creative tasks
+- Context window limits how many tokens each worker can generate per step
+- If orchestration fails (e.g. Ollama not running), report the error clearly
+"""
+
+
+@mcp.resource("goose://orchestrator/instructions")
+def get_instructions() -> str:
+    """System instructions for how the LLM should use this extension."""
+    return SYSTEM_INSTRUCTIONS
+
 
 # =============================================================================
 # Core orchestration tools
