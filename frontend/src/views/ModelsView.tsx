@@ -23,6 +23,61 @@ interface WorkerCfg {
 
 const PROVIDERS = ["ollama", "openai", "anthropic"];
 
+/** Dropdown for model selection. Shows fetched models as options + allows typing a custom model name. */
+function ModelSelect({ value, models, onChange }: { value: string; models: string[]; onChange: (v: string) => void }) {
+  const [custom, setCustom] = useState(false);
+
+  // If the current value isn't in the fetched list, show text input mode
+  const valueInList = models.length > 0 && models.includes(value);
+  const showDropdown = models.length > 0 && !custom;
+
+  return (
+    <div className="flex gap-1.5 items-center">
+      {showDropdown ? (
+        <select
+          value={valueInList ? value : "__custom__"}
+          onChange={e => {
+            if (e.target.value === "__custom__") {
+              setCustom(true);
+            } else {
+              onChange(e.target.value);
+            }
+          }}
+          className="flex-1 bg-surface-0 border border-border text-text text-xs px-2 py-1.5 focus:outline-none focus:border-cyan/40"
+          style={{ borderRadius: 0, fontFamily: "var(--font-mono)" }}
+        >
+          {/* Show current value at top if it's not in the list */}
+          {!valueInList && value && (
+            <option value={value}>{value} (current)</option>
+          )}
+          {models.map(m => (
+            <option key={m} value={m}>{m}</option>
+          ))}
+          <option value="__custom__">— enter custom model —</option>
+        </select>
+      ) : (
+        <input
+          value={value}
+          onChange={e => onChange(e.target.value)}
+          placeholder="model:tag"
+          className="flex-1 bg-surface-0 border border-border text-text text-xs px-2 py-1.5 focus:outline-none focus:border-cyan/40"
+          style={{ borderRadius: 0, fontFamily: "var(--font-mono)" }}
+        />
+      )}
+      {models.length > 0 && (
+        <button
+          onClick={() => setCustom(!custom)}
+          className="px-1.5 py-1 border text-[9px] text-dim hover:text-sec transition-all shrink-0"
+          style={{ background: "var(--color-surface-2)", borderColor: "var(--color-border)", borderRadius: 0 }}
+          title={custom ? "Show dropdown" : "Type custom model"}
+        >
+          {custom ? "list" : "edit"}
+        </button>
+      )}
+    </div>
+  );
+}
+
 export default function ModelsView() {
   const [orch, setOrch] = useState<OrchestratorCfg | null>(null);
   const [workers, setWorkers] = useState<Record<string, WorkerCfg>>({});
@@ -39,9 +94,29 @@ export default function ModelsView() {
     setWorkers(cfg.workers || {});
     setOrchDirty(false);
     setWorkerDirty(new Set());
+
+    // Auto-fetch models for all providers in use
+    const providersInUse = new Set<string>();
+    if (cfg.orchestrator?.provider) providersInUse.add(cfg.orchestrator.provider);
+    for (const w of Object.values(cfg.workers || {})) {
+      if ((w as any).provider) providersInUse.add((w as any).provider);
+    }
+    for (const p of providersInUse) {
+      fetchModelsQuiet(p);
+    }
   }, []);
 
   useEffect(() => { load(); }, [load]);
+
+  // Fetch without setting loadingModels spinner (for background auto-fetch)
+  const fetchModelsQuiet = async (provider: string) => {
+    try {
+      const data = await apiGet(`/api/models/${provider}`);
+      setAvailableModels(prev => ({ ...prev, [provider]: data.models || [] }));
+    } catch {
+      setAvailableModels(prev => ({ ...prev, [provider]: [] }));
+    }
+  };
 
   const fetchModels = async (provider: string) => {
     setLoadingModels(provider);
@@ -142,17 +217,11 @@ export default function ModelsView() {
           {/* Model */}
           <label className="space-y-1.5">
             <span className="bp-label-caps flex items-center gap-1"><Cpu size={9} /> Model</span>
-            <div className="relative">
-              <input value={orch.model} onChange={e => updateOrch("model", e.target.value)}
-                list="orch-models"
-                className="w-full bg-surface-0 border border-border text-text text-xs px-2.5 py-2 focus:outline-none focus:border-cyan/40"
-                style={{ borderRadius: 0, fontFamily: "var(--font-mono)" }} />
-              {orchModels.length > 0 && (
-                <datalist id="orch-models">
-                  {orchModels.map(m => <option key={m} value={m} />)}
-                </datalist>
-              )}
-            </div>
+            <ModelSelect
+              value={orch.model}
+              models={orchModels}
+              onChange={v => updateOrch("model", v)}
+            />
           </label>
 
           {/* Context Window */}
@@ -262,16 +331,11 @@ export default function ModelsView() {
                     {/* Model */}
                     <label className="space-y-1">
                       <span className="bp-label-caps">Model</span>
-                      <input value={cfg.model}
-                        onChange={e => updateWorker(role, "model", e.target.value)}
-                        list={`models-${role}`}
-                        className="w-full bg-surface-0 border border-border text-text text-xs px-2 py-1.5 focus:outline-none focus:border-cyan/40"
-                        style={{ borderRadius: 0, fontFamily: "var(--font-mono)" }} />
-                      {wModels.length > 0 && (
-                        <datalist id={`models-${role}`}>
-                          {wModels.map(m => <option key={m} value={m} />)}
-                        </datalist>
-                      )}
+                      <ModelSelect
+                        value={cfg.model}
+                        models={wModels}
+                        onChange={v => updateWorker(role, "model", v)}
+                      />
                     </label>
 
                     {/* Context Window */}
