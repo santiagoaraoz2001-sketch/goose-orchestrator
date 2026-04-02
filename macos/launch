@@ -1,0 +1,66 @@
+#!/bin/bash
+# Goose Orchestrator — macOS app launcher
+# Starts the FastAPI backend and opens the browser UI.
+
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+# Navigate up from Contents/MacOS to the repo root
+REPO_ROOT="$(cd "$SCRIPT_DIR/../../.." 2>/dev/null && pwd)" || REPO_ROOT="$SCRIPT_DIR"
+
+PORT=7432
+PID_FILE="/tmp/goose-orchestrator.pid"
+LOG_FILE="/tmp/goose-orchestrator.log"
+
+cleanup() {
+    if [ -f "$PID_FILE" ]; then
+        kill "$(cat "$PID_FILE")" 2>/dev/null || true
+        rm -f "$PID_FILE"
+    fi
+}
+trap cleanup EXIT INT TERM
+
+# Kill any existing instance
+if [ -f "$PID_FILE" ]; then
+    kill "$(cat "$PID_FILE")" 2>/dev/null || true
+    rm -f "$PID_FILE"
+    sleep 1
+fi
+
+# Find uv
+if command -v uv &>/dev/null; then
+    UV="uv"
+elif [ -f "$HOME/.local/bin/uv" ]; then
+    UV="$HOME/.local/bin/uv"
+elif [ -f "$HOME/.cargo/bin/uv" ]; then
+    UV="$HOME/.cargo/bin/uv"
+else
+    # Fallback: try to find uv via common paths
+    for p in /usr/local/bin/uv /opt/homebrew/bin/uv; do
+        if [ -f "$p" ]; then UV="$p"; break; fi
+    done
+fi
+
+if [ -z "${UV:-}" ]; then
+    osascript -e 'display alert "uv not found" message "Install uv: curl -LsSf https://astral.sh/uv/install.sh | sh" as critical'
+    exit 1
+fi
+
+# Start backend
+cd "$REPO_ROOT"
+$UV run --project "$REPO_ROOT" goose-orchestrator-ui --port "$PORT" --no-open > "$LOG_FILE" 2>&1 &
+echo $! > "$PID_FILE"
+
+# Wait for server to be ready (up to 30s)
+for i in $(seq 1 60); do
+    if curl -s "http://127.0.0.1:$PORT/api/status" >/dev/null 2>&1; then
+        break
+    fi
+    sleep 0.5
+done
+
+# Open browser
+open "http://localhost:$PORT"
+
+# Keep the process alive so the app stays in the dock
+wait "$(cat "$PID_FILE")" 2>/dev/null || true

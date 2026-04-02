@@ -7,10 +7,15 @@ dependencies = [
     "mcp[cli]>=1.25.0",
     "requests>=2.32.0",
     "pyyaml>=6.0",
+    "crewai[tools]>=0.100.0",
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.34.0",
+    "websockets>=14.0",
 ]
 
 [project.scripts]
 goose-orchestrator = "goose_orchestrator:main"
+goose-orchestrator-ui = "goose_orchestrator.backend.app:start"
 
 [build-system]
 requires = ["hatchling"]
@@ -19,9 +24,12 @@ build-backend = "hatchling.build"
 [tool.hatch.build.targets.wheel]
 packages = ["src/goose_orchestrator"]
 
+[tool.hatch.build.targets.wheel.shared-data]
+"frontend/dist" = "goose_orchestrator/frontend_dist"
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 asyncio_mode = "auto"
 
 [project.optional-dependencies]
-dev = ["pytest>=8.0", "pytest-asyncio>=0.24.0"]
+dev = ["pytest>=8.0", "pytest-asyncio>=0.24.0", "httpx>=0.28.0"]

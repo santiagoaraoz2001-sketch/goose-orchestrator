@@ -11,3 +11,10 @@ build/
 .mypy_cache/
 .ruff_cache/
 *.so
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+
+# macOS
+.DS_Store

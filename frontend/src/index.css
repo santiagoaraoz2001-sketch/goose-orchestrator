@@ -1,0 +1,110 @@
+@import "tailwindcss";
+
+/* ── Blueprint Design System ────────────────────────────────────────────── */
+
+@theme {
+  --color-bg: #060709;
+  --color-bg-alt: #090C11;
+  --color-text: #F2F4F8;
+  --color-sec: #C4CDDE;
+  --color-dim: #90A0B5;
+  --color-muted: #1A1F2C;
+
+  --color-surface-0: #0B0D13;
+  --color-surface-1: #0F1319;
+  --color-surface-2: #141922;
+  --color-surface-3: #1B2130;
+  --color-surface-4: #222A3C;
+  --color-surface-5: #2C3649;
+  --color-surface-6: #384557;
+
+  --color-border: #252E3C;
+  --color-border-hi: #374659;
+
+  --color-cyan: #2FFCC8;
+  --color-green: #3EF07A;
+  --color-amber: #FFBE45;
+  --color-red: #FF5E72;
+  --color-blue: #5B96FF;
+  --color-purple: #A87EFF;
+  --color-pink: #F070C8;
+  --color-teal: #35D8F0;
+
+  --font-sans: 'IBM Plex Sans', 'Inter', 'Segoe UI', sans-serif;
+  --font-display: 'Space Grotesk', 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
+}
+
+/* ── Base ────────────────────────────────────────────────────────────────── */
+
+body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Scrollbar ───────────────────────────────────────────────────────────── */
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--color-surface-5); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--color-surface-6); }
+
+/* ── Utility classes ─────────────────────────────────────────────────────── */
+
+.bp-label-caps {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--color-dim);
+}
+
+.bp-mono-data {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-sec);
+}
+
+.bp-panel {
+  background: linear-gradient(145deg, color-mix(in srgb, var(--color-surface-2) 93%, transparent) 0%, color-mix(in srgb, var(--color-surface-1) 80%, transparent) 100%);
+  border: 1px solid var(--color-border);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.5), 0 2px 6px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.05);
+  border-radius: 12px;
+  backdrop-filter: blur(16px);
+}
+
+.bp-panel:hover {
+  border-color: var(--color-border-hi);
+}
+
+.bp-glow-ring {
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-cyan) 33%, transparent),
+              0 0 12px color-mix(in srgb, var(--color-cyan) 16%, transparent),
+              0 0 24px color-mix(in srgb, var(--color-cyan) 8%, transparent);
+}
+
+/* ── Animations ──────────────────────────────────────────────────────────── */
+
+@keyframes nav-active-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+@keyframes view-enter {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-view-enter {
+  animation: view-enter 280ms ease-out;
+}

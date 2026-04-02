@@ -1,21 +1,25 @@
 # goose-orchestrator
 
-A multi-model orchestrator-worker [MCP](https://modelcontextprotocol.io/) extension for [Goose](https://github.com/block/goose). Routes prompts to specialized worker models with VRAM-aware hot-swapping — only the orchestrator and active worker are loaded at any time.
+A multi-model orchestrator-worker [MCP](https://modelcontextprotocol.io/) extension for [Goose](https://github.com/block/goose) with a browser-based dashboard. Routes prompts to specialized CrewAI worker agents with VRAM-aware hot-swapping.
+
+**by Specific Labs**
 
 ## Features
 
 - **Automatic task routing** — orchestrator LLM decomposes prompts into a dependency graph of sub-tasks, each assigned to a specialized worker role
+- **CrewAI-powered workers** — each role runs as a CrewAI Agent with its own model, temperature, and tools
 - **VRAM-aware model pool** — LRU eviction ensures local models stay within a configurable memory budget; API models bypass the pool
 - **Speculative preloading** — the router predicts the next worker needed and begins loading it during the current step
 - **Parallel execution** — independent steps run concurrently up to a configurable worker limit
-- **Per-worker temperature** — each role has its own sampling temperature (e.g. 0.1 for math, 0.9 for creative)
-- **Goose-native configuration** — all settings managed through MCP tools in Goose's chat UI
+- **Browser dashboard** — full React UI with Blueprint design system (dark theme, live execution monitoring, config management)
+- **macOS .app launcher** — double-click to start the server and open the UI
 - **Multi-provider** — supports Ollama (local), OpenAI-compatible APIs, and Anthropic
+- **Goose MCP integration** — also works as a native Goose extension via MCP tools
 
 ## Default Worker Roles
 
-| Role | Default Model | Temperature | Optimized For |
-|------|--------------|-------------|---------------|
+| Role | Default Model | Temp | Optimized For |
+|------|--------------|------|---------------|
 | `deep_research` | `qwen3:32b` | 0.4 | Multi-hop web research, paper analysis |
 | `local_rag` | `qwen3:8b` | 0.2 | Local document retrieval, code search |
 | `code_gen` | `qwen2.5-coder:32b` | 0.3 | Code generation, refactoring, debugging |
@@ -23,27 +27,41 @@ A multi-model orchestrator-worker [MCP](https://modelcontextprotocol.io/) extens
 | `math_reasoning` | `qwen3:32b` | 0.1 | Formal proofs, calculations, logic |
 | `creative` | `llama3:70b` | 0.9 | Creative writing, brainstorming |
 
-All roles are fully customizable — change models, add new roles, or remove existing ones.
+All roles are fully customizable via the UI or MCP tools.
 
-## Setup
+## Quick Start
 
 ### Prerequisites
 
 - Python 3.12+
-- [uv](https://docs.astral.sh/uv/) package manager
-- [Ollama](https://ollama.ai/) (for local models) and/or API keys for OpenAI/Anthropic
+- [uv](https://docs.astral.sh/uv/)
+- Node.js 18+ (for frontend build)
+- [Ollama](https://ollama.ai/) and/or API keys for OpenAI/Anthropic
 
-### Installation
-
-Clone the repo and install:
+### Install & Run (Browser UI)
 
 ```bash
-git clone https://github.com/santiagoaraoz/goose-orchestrator.git
+git clone https://github.com/santiagoaraoz2001-sketch/goose-orchestrator.git
 cd goose-orchestrator
+
+# Build everything
 uv sync
+cd frontend && npm install && npm run build && cd ..
+
+# Launch (opens browser to http://localhost:7432)
+uv run goose-orchestrator-ui
 ```
 
-### Goose Integration (STDIO)
+### macOS App (one-click launcher)
+
+```bash
+bash build-app.sh
+cp -r "dist/Goose Orchestrator.app" /Applications/
+```
+
+Then launch from Spotlight or your Applications folder.
+
+### Goose MCP Extension
 
 Add to `~/.config/goose/config.yaml`:
 
@@ -62,30 +80,6 @@ extensions:
     timeout: 600
 ```
 
-Restart Goose to load the extension.
-
-## Available Tools
-
-### Core
-
-| Tool | Description |
-|------|-------------|
-| `orchestrate(prompt)` | Route a prompt through the full orchestrator-worker pipeline |
-| `status()` | Show loaded models, VRAM usage, and current configuration |
-| `reset_workers()` | Unload all worker models from VRAM |
-
-### Configuration
-
-| Tool | Description |
-|------|-------------|
-| `list_config()` | Display full configuration as YAML |
-| `configure_orchestrator(model, provider, context_window, endpoint)` | Update orchestrator model settings |
-| `configure_worker(role, model, provider, context_window, temperature, enabled, description)` | Update or create a worker role |
-| `remove_worker(role)` | Delete a worker role |
-| `set_max_workers(count)` | Set max simultaneous workers (1-8) |
-| `set_vram_budget(gb)` | Set total VRAM budget for local models |
-| `configure_provider(name, endpoint, api_key_env)` | Configure a provider endpoint |
-
 ## Architecture
 
 ```
@@ -95,41 +89,43 @@ User Prompt → Orchestrator LLM (task classification)
                     ↓
         ┌───────────┼───────────┐
         ↓           ↓           ↓
-   Worker A    Worker B    Worker C    (parallel where independent)
+   CrewAI Agent  CrewAI Agent  CrewAI Agent   (parallel)
+   (research)    (code_gen)    (summarizer)
         ↓           ↓           ↓
         └───────────┼───────────┘
                     ↓
            Assembled Response
 ```
 
-The **Model Pool** enforces a strict VRAM budget:
-- Orchestrator model is pinned (never evicted)
-- Worker models are evicted LRU-first when space is needed
-- API-backed models have zero local VRAM cost
+The **Model Pool** enforces a strict VRAM budget with LRU eviction. The orchestrator model is pinned and never evicted. API-backed models have zero local VRAM cost.
 
-## Local Development
+## API Endpoints
 
-```bash
-# Install with dev dependencies
-uv sync --extra dev
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/api/config` | Full configuration |
+| `PATCH` | `/api/config/orchestrator` | Update orchestrator model |
+| `GET` | `/api/config/workers` | List all worker roles |
+| `PATCH` | `/api/config/workers/{role}` | Update a worker role |
+| `POST` | `/api/config/workers/{role}` | Create a worker role |
+| `DELETE` | `/api/config/workers/{role}` | Remove a worker role |
+| `PATCH` | `/api/config/resources` | Update resource limits |
+| `GET` | `/api/status` | Model pool status |
+| `POST` | `/api/orchestrate` | Run orchestration (REST) |
+| `WS` | `/api/ws` | Live execution streaming |
+| `GET` | `/api/models/{provider}` | List available models |
 
-# Run tests
-uv run pytest tests/ -v
-
-# Run the MCP server directly
-uv run goose-orchestrator
-```
-
-## Testing
-
-```bash
-uv run pytest tests/ -v
-```
-
-Uses the [MCP Inspector](https://github.com/modelcontextprotocol/inspector) for integration testing:
+## Development
 
 ```bash
-npx @modelcontextprotocol/inspector uv run goose-orchestrator
+# Backend (hot-reload)
+uv run uvicorn goose_orchestrator.backend.app:app --reload --port 7432
+
+# Frontend (Vite dev server with proxy)
+cd frontend && npm run dev
+
+# Tests
+uv run --extra dev pytest tests/ -v
 ```
 
 ## License
