@@ -1,6 +1,6 @@
 # opencode-orchestrator
 
-A multi-model orchestrator-worker [MCP](https://modelcontextprotocol.io/) extension for [Goose](https://github.com/block/goose) with a browser-based dashboard. Routes prompts to specialized worker models with VRAM-aware hot-swapping.
+A multi-model orchestrator-worker [MCP](https://modelcontextprotocol.io/) extension for Opencode with a browser-based dashboard. Routes prompts to specialized worker models with VRAM-aware hot-swapping.
 
 **by Specific Labs**
 
